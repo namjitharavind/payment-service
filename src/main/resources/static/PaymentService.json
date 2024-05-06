@@ -1,0 +1,372 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Payment Service",
+    "description": "Payment Service will provide all API's required for student fee purchase payment transaction management",
+    "termsOfService": "http://swagger.io/terms/",
+    "license": {
+      "name": "Apache 2.0",
+      "url": "http://springdoc.org"
+    },
+    "version": "1.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:9083",
+      "description": "Local"
+    }
+  ],
+  "paths": {
+    "/payment": {
+      "post": {
+        "tags": [
+          "Payment"
+        ],
+        "description": "Create a Student",
+        "operationId": "pay",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaymentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/payment/status-update-callback": {
+      "post": {
+        "tags": [
+          "Payment"
+        ],
+        "description": "Transaction update callback",
+        "operationId": "updateStatus",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/PaymentCallBackRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad Request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/payment/{id}": {
+      "get": {
+        "tags": [
+          "Payment"
+        ],
+        "description": "Get Transaction by Id",
+        "operationId": "getTransactionById",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "OK",
+            "content": {
+              "*/*": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Student not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Unexpected error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ApplePay": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string"
+          }
+        }
+      },
+      "CreditCard": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "number": {
+            "type": "string"
+          },
+          "expiry": {
+            "type": "string"
+          },
+          "cvv": {
+            "type": "string"
+          },
+          "holderName": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "VISA",
+              "MASTERCARD",
+              "RUPAY"
+            ]
+          }
+        }
+      },
+      "GooglePay": {
+        "type": "object",
+        "properties": {
+          "token": {
+            "type": "string"
+          }
+        }
+      },
+      "PaymentRequest": {
+        "type": "object",
+        "properties": {
+          "studentId": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "purchaseId": {
+            "type": "string"
+          },
+          "paymentMethod": {
+            "type": "string",
+            "enum": [
+              "CREDIT_DEBIT_CARD",
+              "APPLE_PAY",
+              "GOOGLE_PAY"
+            ]
+          },
+          "creditCard": {
+            "$ref": "#/components/schemas/CreditCard"
+          },
+          "applePay": {
+            "$ref": "#/components/schemas/ApplePay"
+          },
+          "googlePay": {
+            "$ref": "#/components/schemas/GooglePay"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "string"
+          },
+          "msg": {
+            "type": "string"
+          },
+          "field": {
+            "type": "string"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "errors": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/Error"
+            }
+          },
+          "path": {
+            "type": "string"
+          }
+        }
+      },
+      "PaymentResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "studentId": {
+            "type": "string"
+          },
+          "purchaseId": {
+            "type": "string"
+          },
+          "transactionReference": {
+            "type": "string"
+          },
+          "status": {
+            "type": "string",
+            "enum": [
+              "NOT_YET_STARTED",
+              "ACCEPTED",
+              "AUTHORIZED",
+              "CAPTURED",
+              "DECLINED",
+              "CANCELLED",
+              "PENDING",
+              "REFUNDED",
+              "ERROR"
+            ]
+          },
+          "amount": {
+            "type": "number",
+            "format": "double"
+          },
+          "currency": {
+            "type": "string",
+            "enum": [
+              "AED",
+              "USD",
+              "INR"
+            ]
+          },
+          "paymentMethod": {
+            "type": "string",
+            "enum": [
+              "CREDIT_DEBIT_CARD",
+              "APPLE_PAY",
+              "GOOGLE_PAY"
+            ]
+          },
+          "transactionDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "callbackDate": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "creditCard": {
+            "$ref": "#/components/schemas/CreditCard"
+          },
+          "applePay": {
+            "$ref": "#/components/schemas/ApplePay"
+          },
+          "googlePay": {
+            "$ref": "#/components/schemas/GooglePay"
+          }
+        }
+      },
+      "PaymentCallBackRequest": {
+        "type": "object",
+        "properties": {
+          "transactionId": {
+            "type": "string"
+          },
+          "transactionReferenceId": {
+            "type": "string"
+          },
+          "transactionStatus": {
+            "type": "string",
+            "enum": [
+              "NOT_YET_STARTED",
+              "ACCEPTED",
+              "AUTHORIZED",
+              "CAPTURED",
+              "DECLINED",
+              "CANCELLED",
+              "PENDING",
+              "REFUNDED",
+              "ERROR"
+            ]
+          }
+        }
+      }
+    }
+  }
+}
